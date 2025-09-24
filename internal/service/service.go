@@ -111,8 +111,8 @@ func (s *Service) processTask(workerID int, t repo.Task) {
 	s.repo.SetState(t.ID, "running")
 	log.Printf("[worker-%d] started task:%s", workerID, t.ID)
 
-	// work := time.Duration(10+rand.Intn(10)) * time.Second
-	work := time.Duration(100+rand.Intn(401)) * time.Millisecond // Каждое задание «работает» 100–500 мс (симулируем обработку)
+	work := time.Duration(10+rand.Intn(10)) * time.Second
+	// work := time.Duration(100+rand.Intn(401)) * time.Millisecond // Каждое задание «работает» 100–500 мс (симулируем обработку)
 	time.Sleep(work)
 
 	fail := rand.Intn(100) < 50 // 20% задач «падают» (симулируем ошибки)
