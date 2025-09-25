@@ -10,10 +10,9 @@ import (
 	"testing"
 )
 
-// helper для создания сервиса с маленькой очередью
 func newTestService() *service.Service {
 	r := repo.NewRepo()
-	s := service.NewService(r, 1, 1) // 1 воркер, очередь 1
+	s := service.NewService(r, 1, 1)
 	s.Start()
 	return s
 }
@@ -57,7 +56,7 @@ func TestEnqueueHandler_EmptyID(t *testing.T) {
 	defer s.Shutdown()
 
 	h := EnqueueHandler(s)
-	body := bytes.NewBufferString(`{"id":"","payload":"x","max_retries":1}`)
+	body := bytes.NewBufferString(`{"id":"","payload":"test_data","max_retries":1}`)
 
 	req := httptest.NewRequest(http.MethodPost, "/enqueue", body)
 	w := httptest.NewRecorder()
@@ -74,7 +73,7 @@ func TestEnqueueHandler_NegativeRetries(t *testing.T) {
 	defer s.Shutdown()
 
 	h := EnqueueHandler(s)
-	body := bytes.NewBufferString(`{"id":"t1","payload":"x","max_retries":-1}`)
+	body := bytes.NewBufferString(`{"id":"task1","payload":"test_data","max_retries":-1}`)
 
 	req := httptest.NewRequest(http.MethodPost, "/enqueue", body)
 	w := httptest.NewRecorder()
@@ -94,12 +93,12 @@ func TestEnqueueHandler_QueueFull(t *testing.T) {
 	h := EnqueueHandler(s)
 
 	// Очередь станет заполнена
-	req1 := httptest.NewRequest(http.MethodPost, "/enqueue", bytes.NewBufferString(`{"id":"t1","payload":"x","max_retries":1}`))
+	req1 := httptest.NewRequest(http.MethodPost, "/enqueue", bytes.NewBufferString(`{"id":"task1","payload":"test_data","max_retries":1}`))
 	w1 := httptest.NewRecorder()
 	h(w1, req1)
 
 	// Переполнение
-	req2 := httptest.NewRequest(http.MethodPost, "/enqueue", bytes.NewBufferString(`{"id":"t2","payload":"x","max_retries":1}`))
+	req2 := httptest.NewRequest(http.MethodPost, "/enqueue", bytes.NewBufferString(`{"id":"t2","payload":"test_data","max_retries":1}`))
 	w2 := httptest.NewRecorder()
 	h(w2, req2)
 
@@ -121,7 +120,7 @@ func TestHealthHandler(t *testing.T) {
 
 func TestDebugDumpHandler(t *testing.T) {
 	r := repo.NewRepo()
-	r.CreateOrUpdate(repo.Task{ID: "t1"}, "queued")
+	r.CreateOrUpdate(repo.Task{ID: "task1"}, "queued")
 
 	h := DebugDumpHandler(r)
 	req := httptest.NewRequest(http.MethodGet, "/debug/dump", nil)
@@ -138,7 +137,7 @@ func TestDebugDumpHandler(t *testing.T) {
 		t.Fatalf("invalid json: %v", err)
 	}
 
-	if _, ok := data["t1"]; !ok {
-		t.Fatalf("expected task t1 in dump, got %+v", data)
+	if _, ok := data["task1"]; !ok {
+		t.Fatalf("expected task task1 in dump, got %+v", data)
 	}
 }
